@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Генерация плейлиста — Playlist AI{% endblock %}
+
+{% block content %}
+<section class="generate-page">
+    <h2>Генерация плейлиста</h2>
+    <p class="page-subtitle">Опишите, какую музыку вы хотите услышать</p>
+
+    <div class="generate-form-card card">
+        <form id="generate-form">
+            <div class="form-group">
+                <label for="prompt">Ваш запрос</label>
+                <div class="textarea-wrap">
+                    <textarea id="prompt" name="prompt" placeholder="Например: энергичная музыка для утренней пробежки" maxlength="200" required></textarea>
+                    <div class="char-counter"><span id="char-count">0</span>/200</div>
+                </div>
+                <div class="prompt-hints">
+                    <span class="prompt-hint" data-prompt="Спокойная музыка для вечернего чтения">Для чтения</span>
+                    <span class="prompt-hint" data-prompt="Энергичная музыка для тренировки">Для тренировки</span>
+                    <span class="prompt-hint" data-prompt="Романтические хиты для свидания">Романтика</span>
+                    <span class="prompt-hint" data-prompt="Фоновая музыка для работы и концентрации">Для работы</span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-full" id="generate-btn">Сгенерировать</button>
+        </form>
+    </div>
+
+    <div class="playlist-result" id="playlist-result">
+        <div class="playlist-header">
+            <h3 id="playlist-title">Результат</h3>
+            <span class="track-count" id="track-count"></span>
+        </div>
+        <div class="track-list" id="track-list"></div>
+    </div>
+</section>
+{% endblock %}

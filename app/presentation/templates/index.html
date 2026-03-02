@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Playlist AI — Главная{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Создавайте плейлисты<br>с помощью ИИ</h1>
+    <p class="subtitle">Опишите настроение, жанр или ситуацию — искусственный интеллект подберёт идеальные треки для вас</p>
+    <a href="/generate" class="btn">Создать плейлист</a>
+</section>
+
+<section class="features">
+    <div class="feature-card card">
+        <span class="icon">&#127911;</span>
+        <h3>Умные рекомендации</h3>
+        <p>ИИ анализирует ваш запрос и подбирает треки, идеально подходящие под настроение</p>
+    </div>
+    <div class="feature-card card">
+        <span class="icon">&#9889;</span>
+        <h3>Мгновенная генерация</h3>
+        <p>Получите готовый плейлист за секунды — просто опишите, что хотите услышать</p>
+    </div>
+    <div class="feature-card card">
+        <span class="icon">&#128218;</span>
+        <h3>История плейлистов</h3>
+        <p>Все сгенерированные плейлисты сохраняются в вашем профиле для быстрого доступа</p>
+    </div>
+</section>
+{% endblock %}

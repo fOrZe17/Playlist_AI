@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Playlist AI{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">Playlist AI</a>
+            <button class="nav-burger" id="nav-burger">&#9776;</button>
+            <ul id="nav-menu">
+                <li><a href="/">Главная</a></li>
+                <li><a href="/generate">Генерация</a></li>
+                <li><a href="/profile">Профиль</a></li>
+                <li class="nav-guest"><a href="/login">Вход</a></li>
+                <li class="nav-guest"><a href="/register">Регистрация</a></li>
+            </ul>
+            <div class="nav-auth" id="nav-auth">
+                <span class="user-email" id="nav-email"></span>
+                <button class="btn-logout" id="btn-logout">Выйти</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Playlist AI</p>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

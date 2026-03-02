@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — Playlist AI{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <h2>Мой профиль</h2>
+
+    <div class="profile-card card">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div class="profile-details">
+            <h3 id="profile-email">--</h3>
+            <p id="profile-date">Загрузка...</p>
+        </div>
+    </div>
+
+    <div class="profile-stats">
+        <div class="stat-card card">
+            <div class="stat-value" id="stat-playlists">0</div>
+            <div class="stat-label">Плейлистов</div>
+        </div>
+        <div class="stat-card card">
+            <div class="stat-value" id="stat-tracks">0</div>
+            <div class="stat-label">Треков</div>
+        </div>
+    </div>
+
+    <h3 class="section-title">История плейлистов</h3>
+    <div class="playlist-history" id="playlists-history">
+        <div class="empty-state">
+            <span class="empty-icon">&#127925;</span>
+            <p>Плейлисты пока не созданы</p>
+            <a href="/generate" class="btn">Создать первый</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
