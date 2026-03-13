@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.domain.entities.playlist import Playlist
+from app.domain.entities.track import Track
 
 
 class PlaylistRepository(ABC):
@@ -13,9 +14,17 @@ class PlaylistRepository(ABC):
         ...
 
     @abstractmethod
-    async def create(self, playlist: Playlist) -> Playlist:
+    async def create(self, playlist: Playlist, tracks: list[Track] | None = None) -> Playlist:
+        ...
+
+    @abstractmethod
+    async def update_title(self, playlist_id: int, title: str) -> Playlist | None:
         ...
 
     @abstractmethod
     async def delete(self, playlist_id: int) -> None:
+        ...
+
+    @abstractmethod
+    async def delete_track(self, track_id: int) -> None:
         ...

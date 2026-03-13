@@ -1,6 +1,7 @@
 // Playlist AI — клиентская логика
 
 const API = "/api";
+const AUTH_API = "/api/auth";
 
 // ===== УТИЛИТЫ =====
 
@@ -120,7 +121,7 @@ function initRegister() {
         setLoading(btn, true);
 
         try {
-            const res = await fetch(`${API}/register`, {
+            const res = await fetch(`${AUTH_API}/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -158,7 +159,7 @@ function initLogin() {
         setLoading(btn, true);
 
         try {
-            const res = await fetch(`${API}/login`, {
+            const res = await fetch(`${AUTH_API}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -293,7 +294,7 @@ function initProfile() {
 
 async function loadProfile() {
     try {
-        const res = await fetch(`${API}/profile`, { headers: authHeaders() });
+        const res = await fetch(`${AUTH_API}/me`, { headers: authHeaders() });
         if (res.status === 401) {
             clearAuth();
             window.location.href = "/login";
