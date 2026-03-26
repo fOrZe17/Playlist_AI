@@ -45,6 +45,8 @@ class SQLAlchemyPlaylistRepository(PlaylistRepository):
                     title=t.title,
                     artist=t.artist,
                     url=t.url,
+                    cover_url=t.cover_url,
+                    duration=t.duration,
                 )
                 for t in tracks
             ]
@@ -82,6 +84,8 @@ class SQLAlchemyPlaylistRepository(PlaylistRepository):
                 title=t.title,
                 artist=t.artist,
                 url=t.url,
+                cover_url=t.cover_url,
+                duration=t.duration,
                 playlist_id=t.playlist_id,
             )
             for t in model.tracks

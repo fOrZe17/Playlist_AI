@@ -1,5 +1,4 @@
-import random
-from datetime import datetime
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
@@ -7,33 +6,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.auth import decode_access_token
 from app.infrastructure.database.connection import get_session
-from app.infrastructure.database.repositories.user_repository import SQLAlchemyUserRepository
 from app.infrastructure.database.repositories.playlist_repository import SQLAlchemyPlaylistRepository
+from app.infrastructure.external.ai_gateway import HttpAIGateway, AIContentError
+from app.infrastructure.external.music_gateway import HttpMusicGateway
 from app.domain.entities.playlist import Playlist
 from app.domain.entities.track import Track
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
-MOCK_TRACKS = [
-    {"title": "Blinding Lights", "artist": "The Weeknd", "duration": "3:20", "cover": "🌆"},
-    {"title": "Bohemian Rhapsody", "artist": "Queen", "duration": "5:55", "cover": "👑"},
-    {"title": "Shape of You", "artist": "Ed Sheeran", "duration": "3:53", "cover": "🎸"},
-    {"title": "Starboy", "artist": "The Weeknd", "duration": "3:50", "cover": "⭐"},
-    {"title": "Levitating", "artist": "Dua Lipa", "duration": "3:23", "cover": "🚀"},
-    {"title": "Watermelon Sugar", "artist": "Harry Styles", "duration": "2:54", "cover": "🍉"},
-    {"title": "Save Your Tears", "artist": "The Weeknd", "duration": "3:35", "cover": "💧"},
-    {"title": "Peaches", "artist": "Justin Bieber", "duration": "3:18", "cover": "🍑"},
-    {"title": "Good 4 U", "artist": "Olivia Rodrigo", "duration": "2:58", "cover": "🔥"},
-    {"title": "Stay", "artist": "The Kid LAROI & Justin Bieber", "duration": "2:21", "cover": "💜"},
-    {"title": "Montero", "artist": "Lil Nas X", "duration": "2:17", "cover": "🦋"},
-    {"title": "Kiss Me More", "artist": "Doja Cat ft. SZA", "duration": "3:28", "cover": "💋"},
-    {"title": "drivers license", "artist": "Olivia Rodrigo", "duration": "4:02", "cover": "🚗"},
-    {"title": "Positions", "artist": "Ariana Grande", "duration": "2:52", "cover": "✨"},
-    {"title": "Dynamite", "artist": "BTS", "duration": "3:19", "cover": "💣"},
-    {"title": "Circles", "artist": "Post Malone", "duration": "3:35", "cover": "🔵"},
-    {"title": "Sunflower", "artist": "Post Malone & Swae Lee", "duration": "2:38", "cover": "🌻"},
-    {"title": "Shallow", "artist": "Lady Gaga & Bradley Cooper", "duration": "3:35", "cover": "🌊"},
-]
+# Единственные экземпляры gateway
+_ai_gateway = HttpAIGateway()
+_music_gateway = HttpMusicGateway()
 
 
 def _get_user_id_from_token(authorization: str | None) -> int | None:
@@ -61,9 +46,23 @@ async def generate(
     if not user_id:
         raise HTTPException(status_code=401, detail="Необходима авторизация")
 
-    # Генерация mock-треков
-    count = random.randint(5, 8)
-    mock_tracks = random.sample(MOCK_TRACKS, k=min(count, len(MOCK_TRACKS)))
+    # Генерация треков через Gemini AI
+    try:
+        suggestions = await _ai_gateway.generate_playlist_suggestions(data.prompt)
+    except AIContentError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("Ошибка при обращении к Gemini: %s", e)
+        raise HTTPException(status_code=502, detail="Ошибка генерации плейлиста")
+
+    # Обогащение треков через Deezer API
+    enriched = await _music_gateway.enrich_tracks(suggestions)
+
+    if not enriched:
+        raise HTTPException(
+            status_code=400,
+            detail="Не удалось найти треки. Попробуйте другой запрос.",
+        )
 
     title = data.title or f"Плейлист: {data.prompt[:40]}"
 
@@ -74,8 +73,14 @@ async def generate(
         user_id=user_id,
     )
     track_entities = [
-        Track(title=t["title"], artist=t["artist"])
-        for t in mock_tracks
+        Track(
+            title=t.get("title", ""),
+            artist=t.get("artist", ""),
+            url=t.get("url"),
+            cover_url=t.get("cover_url"),
+            duration=t.get("duration", 0),
+        )
+        for t in enriched
     ]
 
     repo = SQLAlchemyPlaylistRepository(session)
@@ -88,15 +93,25 @@ async def generate(
         "prompt": saved_playlist.prompt,
         "tracks": [
             {
-                "title": t["title"],
-                "artist": t["artist"],
-                "duration": t["duration"],
-                "cover": t["cover"],
+                "title": t.title,
+                "artist": t.artist,
+                "duration": _format_duration(t.duration),
+                "cover": t.cover_url or "🎵",
+                "url": t.url or "",
             }
-            for t in mock_tracks
+            for t in saved_playlist.tracks
         ],
         "created_at": saved_playlist.created_at.isoformat(),
     }
+
+
+def _format_duration(seconds: int) -> str:
+    """Форматирование длительности из секунд в мм:сс."""
+    if not seconds:
+        return ""
+    minutes = seconds // 60
+    secs = seconds % 60
+    return f"{minutes}:{secs:02d}"
 
 
 @router.get("/playlists")
@@ -121,8 +136,9 @@ async def playlists(
                     {
                         "title": t.title,
                         "artist": t.artist,
-                        "duration": "",
-                        "cover": "🎵",
+                        "duration": _format_duration(t.duration),
+                        "cover": t.cover_url or "🎵",
+                        "url": t.url or "",
                     }
                     for t in p.tracks
                 ],

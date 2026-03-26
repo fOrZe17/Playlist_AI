@@ -7,4 +7,6 @@ class Track:
     title: str = ""
     artist: str = ""
     url: str | None = None
+    cover_url: str | None = None
+    duration: int = 0
     playlist_id: int | None = None

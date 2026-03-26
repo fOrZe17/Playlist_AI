@@ -544,6 +544,14 @@ main {
     flex-shrink: 0;
 }
 
+.track-cover-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 .track-info {
     flex: 1;
 }
@@ -551,6 +559,17 @@ main {
 .track-title {
     font-weight: 600;
     font-size: 0.95rem;
+}
+
+.track-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.track-link:hover {
+    color: var(--accent-light);
+    text-decoration: underline;
 }
 
 .track-artist {

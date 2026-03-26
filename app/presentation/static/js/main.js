@@ -261,18 +261,65 @@ function renderPlaylist(playlist) {
     listEl.innerHTML = "";
 
     playlist.tracks.forEach((track, i) => {
+        console.log("Track data:", track);
+
         const item = document.createElement("div");
         item.className = "track-item";
         item.style.animationDelay = `${i * 0.08}s`;
-        item.innerHTML = `
-            <span class="track-number">${i + 1}</span>
-            <div class="track-cover">${track.cover || "🎵"}</div>
-            <div class="track-info">
-                <div class="track-title">${track.title}</div>
-                <div class="track-artist">${track.artist}</div>
-            </div>
-            <span class="track-duration">${track.duration || ""}</span>
-        `;
+
+        // Номер трека
+        const numberEl = document.createElement("span");
+        numberEl.className = "track-number";
+        numberEl.textContent = i + 1;
+        item.appendChild(numberEl);
+
+        // Обложка: картинка или эмодзи
+        const coverValue = track.cover || "🎵";
+        if (coverValue.startsWith("http")) {
+            const img = document.createElement("img");
+            img.className = "track-cover-img";
+            img.src = coverValue;
+            img.alt = track.title;
+            item.appendChild(img);
+        } else {
+            const coverDiv = document.createElement("div");
+            coverDiv.className = "track-cover";
+            coverDiv.textContent = coverValue;
+            item.appendChild(coverDiv);
+        }
+
+        // Информация о треке
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "track-info";
+
+        if (track.url) {
+            const link = document.createElement("a");
+            link.className = "track-title track-link";
+            link.href = track.url;
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.textContent = track.title;
+            infoDiv.appendChild(link);
+        } else {
+            const titleDiv = document.createElement("div");
+            titleDiv.className = "track-title";
+            titleDiv.textContent = track.title;
+            infoDiv.appendChild(titleDiv);
+        }
+
+        const artistDiv = document.createElement("div");
+        artistDiv.className = "track-artist";
+        artistDiv.textContent = track.artist;
+        infoDiv.appendChild(artistDiv);
+
+        item.appendChild(infoDiv);
+
+        // Длительность
+        const durationEl = document.createElement("span");
+        durationEl.className = "track-duration";
+        durationEl.textContent = track.duration || "";
+        item.appendChild(durationEl);
+
         listEl.appendChild(item);
     });
 
