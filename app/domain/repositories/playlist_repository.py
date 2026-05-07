@@ -22,6 +22,10 @@ class PlaylistRepository(ABC):
         ...
 
     @abstractmethod
+    async def update_favorite(self, playlist_id: int, is_favorite: bool) -> Playlist | None:
+        ...
+
+    @abstractmethod
     async def delete(self, playlist_id: int) -> None:
         ...
 

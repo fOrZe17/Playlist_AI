@@ -33,3 +33,8 @@ async def generate_page(request: Request):
 async def profile_page(request: Request):
     """Профиль с историей плейлистов."""
     return templates.TemplateResponse("profile.html", {"request": request})
+
+
+@router.get("/profile/edit")
+async def profile_edit_page(request: Request):
+    return templates.TemplateResponse("profile_edit.html", {"request": request})

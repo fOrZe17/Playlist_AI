@@ -1,16 +1,17 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.auth import decode_access_token
+from app.domain.entities.user import User
 from app.infrastructure.database.connection import get_session
 from app.infrastructure.database.repositories.playlist_repository import SQLAlchemyPlaylistRepository
 from app.infrastructure.external.ai_gateway import HttpAIGateway, AIContentError
 from app.infrastructure.external.music_gateway import HttpMusicGateway
 from app.domain.entities.playlist import Playlist
 from app.domain.entities.track import Track
+from app.presentation.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -21,31 +22,26 @@ _ai_gateway = HttpAIGateway()
 _music_gateway = HttpMusicGateway()
 
 
-def _get_user_id_from_token(authorization: str | None) -> int | None:
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    token = authorization[7:]
-    payload = decode_access_token(token)
-    if payload and "sub" in payload:
-        return int(payload["sub"])
-    return None
-
-
 class GenerateRequest(BaseModel):
     prompt: str
     title: str = ""
 
 
+class PlaylistUpdateRequest(BaseModel):
+    title: str
+    removed_track_ids: list[int] = []
+
+
+class PlaylistFavoriteRequest(BaseModel):
+    is_favorite: bool
+
+
 @router.post("/generate")
 async def generate(
     data: GenerateRequest,
-    authorization: str | None = Header(default=None),
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    user_id = _get_user_id_from_token(authorization)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Необходима авторизация")
-
     # Генерация треков через Gemini AI
     try:
         suggestions = await _ai_gateway.generate_playlist_suggestions(data.prompt)
@@ -70,7 +66,7 @@ async def generate(
     playlist_entity = Playlist(
         title=title,
         prompt=data.prompt,
-        user_id=user_id,
+        user_id=current_user.id,
     )
     track_entities = [
         Track(
@@ -91,8 +87,10 @@ async def generate(
         "id": saved_playlist.id,
         "title": saved_playlist.title,
         "prompt": saved_playlist.prompt,
+        "is_favorite": saved_playlist.is_favorite,
         "tracks": [
             {
+                "id": t.id,
                 "title": t.title,
                 "artist": t.artist,
                 "duration": _format_duration(t.duration),
@@ -116,15 +114,11 @@ def _format_duration(seconds: int) -> str:
 
 @router.get("/playlists")
 async def playlists(
-    authorization: str | None = Header(default=None),
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    user_id = _get_user_id_from_token(authorization)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Необходима авторизация")
-
     repo = SQLAlchemyPlaylistRepository(session)
-    user_playlists = await repo.get_by_user_id(user_id)
+    user_playlists = await repo.get_by_user_id(current_user.id)
 
     return {
         "playlists": [
@@ -132,8 +126,10 @@ async def playlists(
                 "id": p.id,
                 "title": p.title,
                 "prompt": p.prompt,
+                "is_favorite": p.is_favorite,
                 "tracks": [
                     {
+                        "id": t.id,
                         "title": t.title,
                         "artist": t.artist,
                         "duration": _format_duration(t.duration),
@@ -147,3 +143,79 @@ async def playlists(
             for p in user_playlists
         ]
     }
+
+
+@router.patch("/playlists/{playlist_id}")
+async def update_playlist(
+    playlist_id: int,
+    data: PlaylistUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    title = data.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Название плейлиста не может быть пустым")
+
+    repo = SQLAlchemyPlaylistRepository(session)
+    playlist = await repo.get_by_id(playlist_id)
+    if not playlist or playlist.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Плейлист не найден")
+
+    track_ids = {t.id for t in playlist.tracks}
+    for track_id in data.removed_track_ids:
+        if track_id in track_ids:
+            await repo.delete_track(track_id)
+
+    updated = await repo.update_title(playlist_id, title)
+    return {
+        "id": updated.id,
+        "title": updated.title,
+        "prompt": updated.prompt,
+        "is_favorite": updated.is_favorite,
+        "tracks": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "artist": t.artist,
+                "duration": _format_duration(t.duration),
+                "cover": t.cover_url or "",
+                "url": t.url or "",
+            }
+            for t in updated.tracks
+        ],
+        "created_at": updated.created_at.isoformat(),
+    }
+
+
+@router.patch("/playlists/{playlist_id}/favorite")
+async def update_playlist_favorite(
+    playlist_id: int,
+    data: PlaylistFavoriteRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    repo = SQLAlchemyPlaylistRepository(session)
+    playlist = await repo.get_by_id(playlist_id)
+    if not playlist or playlist.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Плейлист не найден")
+
+    updated = await repo.update_favorite(playlist_id, data.is_favorite)
+    return {
+        "id": updated.id,
+        "is_favorite": updated.is_favorite,
+    }
+
+
+@router.delete("/playlists/{playlist_id}")
+async def delete_playlist(
+    playlist_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    repo = SQLAlchemyPlaylistRepository(session)
+    playlist = await repo.get_by_id(playlist_id)
+    if not playlist or playlist.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Плейлист не найден")
+
+    await repo.delete(playlist_id)
+    return {"message": "Плейлист удалён"}

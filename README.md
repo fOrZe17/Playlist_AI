@@ -1,44 +1,93 @@
-# Playlist AI — ВИ МПИИ
+# Playlist AI
 
-Веб-интерфейс для создания музыкальных плейлистов с применением технологии искусственного интеллекта.
+Веб-приложение для генерации музыкальных плейлистов по текстовому запросу. Пользователь описывает настроение, жанр, ситуацию или исполнителя, а приложение получает рекомендации от Gemini, дополняет треки данными Deezer и сохраняет плейлисты в личном профиле.
 
-## Стек технологий
+## Возможности
+
+- регистрация и авторизация пользователей;
+- генерация плейлистов по промпту через Gemini;
+- обогащение треков данными Deezer: исполнитель, обложка, длительность и ссылка;
+- сохранение истории плейлистов в профиле;
+- поиск и сортировка сохраненных плейлистов;
+- избранные плейлисты с визуальной анимацией;
+- коллаж обложек треков на карточке плейлиста;
+- редактирование плейлиста: название, список треков, удаление плейлиста;
+- экспорт плейлиста в CSV;
+- редактирование профиля: никнейм, имя, фамилия, аватар, приватность и смена пароля.
+
+## Стек
 
 - **Backend:** Python, FastAPI, Uvicorn
-- **Шаблонизация:** Jinja2
-- **База данных:** PostgreSQL, SQLAlchemy (async), Alembic
-- **Аутентификация:** JWT (python-jose), passlib
+- **Frontend:** Jinja2, HTML, CSS, чистый JavaScript
+- **База данных:** PostgreSQL, SQLAlchemy Async, Alembic
+- **Авторизация:** JWT, passlib/bcrypt
+- **Внешние API:** Google Gemini, Deezer public API
 
-## Установка и запуск
+## Переменные окружения
+
+Создайте `.env` на основе `.env.example`:
+
+```env
+DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/playlist_ai
+SECRET_KEY=replace-with-secure-secret
+AI_API_KEY=your-gemini-api-key
+```
+
+`DATABASE_URL` должен использовать драйвер `postgresql+asyncpg`.
+
+## Локальный запуск
 
 ```bash
-# Создание виртуального окружения
 python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows
+```
 
-# Установка зависимостей
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Установите зависимости:
+
+```bash
 pip install -r requirements.txt
+```
 
-# Настройка переменных окружения
-cp .env.example .env
-# Отредактируйте .env, указав свои значения
+Примените миграции:
 
-# Запуск сервера
+```bash
+alembic upgrade head
+```
+
+Запустите приложение:
+
+```bash
 uvicorn app.main:app --reload
+```
+
+После запуска сайт будет доступен по адресу:
+
+```text
+http://127.0.0.1:8000
 ```
 
 ## Структура проекта
 
-```
+```text
 app/
-├── main.py          # Точка входа FastAPI
-├── config.py        # Настройки приложения
-├── database.py      # Подключение к БД
-├── models/          # SQLAlchemy модели
-├── routers/         # Маршруты API и страниц
-├── services/        # Бизнес-логика (AI, музыка)
-├── schemas/         # Pydantic-схемы
-├── templates/       # Jinja2 HTML-шаблоны
-└── static/          # CSS, JS
+├── application/              # интерфейсы и use cases
+├── domain/                   # доменные сущности и контракты репозиториев
+├── infrastructure/           # БД, репозитории, Gemini и Deezer gateways
+├── presentation/             # роутеры, схемы, шаблоны и static-файлы
+├── config.py                 # настройки приложения
+└── main.py                   # точка входа FastAPI
+
+alembic/
+└── versions/                 # миграции базы данных
 ```

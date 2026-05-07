@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование профиля — Playlist AI{% endblock %}
+
+{% block content %}
+<section class="profile-edit-page">
+    <h2>Редактирование профиля</h2>
+
+    <div class="profile-edit-panel">
+        <div class="form-error" id="form-error"></div>
+        <form id="profile-edit-form">
+            <div class="avatar-edit-block">
+                <div class="profile-avatar avatar-preview" id="edit-avatar-preview">?</div>
+                <label class="avatar-pencil-btn" for="avatar" aria-label="Загрузить фото профиля">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 20h4.2L18.7 9.5l-4.2-4.2L4 15.8V20Z"></path>
+                        <path d="M16 3.8 20.2 8"></path>
+                    </svg>
+                    <input type="file" id="avatar" name="avatar" accept="image/png,image/jpeg,image/webp">
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="display_name">Имя пользователя</label>
+                <input type="text" id="display_name" name="display_name" maxlength="80" placeholder="Ваш никнейм" required>
+            </div>
+
+            <div class="profile-edit-grid">
+                <div class="form-group">
+                    <label for="first_name">Имя</label>
+                    <input type="text" id="first_name" name="first_name" maxlength="80" placeholder="Ваше имя">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Фамилия</label>
+                    <input type="text" id="last_name" name="last_name" maxlength="80" placeholder="Ваша фамилия">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="profile-edit-email">Email</label>
+                <input type="email" id="profile-edit-email" disabled>
+            </div>
+
+            <div class="profile-edit-section">
+                <h3>Смена пароля</h3>
+                <div class="profile-edit-grid">
+                    <div class="form-group">
+                        <label for="current_password">Текущий пароль</label>
+                        <input type="password" id="current_password" name="current_password" placeholder="Введите текущий пароль">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">Новый пароль</label>
+                        <input type="password" id="new_password" name="new_password" placeholder="Минимум 4 символа">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new_password_confirm">Подтверждение нового пароля</label>
+                    <input type="password" id="new_password_confirm" name="new_password_confirm" placeholder="Повторите новый пароль">
+                </div>
+            </div>
+
+            <div class="profile-edit-section">
+                <h3>Приватность</h3>
+                <label class="switch-row" for="show_email">
+                    <span>
+                        <strong>Показывать email в профиле</strong>
+                        <small>Если выключено, email будет скрыт на странице профиля.</small>
+                    </span>
+                    <input type="checkbox" id="show_email" name="show_email">
+                    <span class="switch-slider"></span>
+                </label>
+                <label class="switch-row" for="show_created_at">
+                    <span>
+                        <strong>Показывать дату создания аккаунта</strong>
+                        <small>Если выключено, дата регистрации не будет отображаться в профиле.</small>
+                    </span>
+                    <input type="checkbox" id="show_created_at" name="show_created_at">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="profile-edit-actions">
+                <a href="/profile" class="btn btn-secondary">Назад</a>
+                <button type="submit" class="btn" id="profile-edit-submit">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

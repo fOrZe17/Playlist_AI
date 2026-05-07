@@ -15,11 +15,17 @@
             </div>
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Минимум 4 символа" required>
+                <div class="password-field">
+                    <input type="password" id="password" name="password" placeholder="Минимум 4 символа" required>
+                    <button type="button" class="password-toggle" data-password-toggle aria-label="Показать пароль, пока кнопка удерживается">&#128065;</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="password_confirm">Подтверждение пароля</label>
-                <input type="password" id="password_confirm" name="password_confirm" placeholder="Повторите пароль" required>
+                <div class="password-field">
+                    <input type="password" id="password_confirm" name="password_confirm" placeholder="Повторите пароль" required>
+                    <button type="button" class="password-toggle" data-password-toggle aria-label="Показать пароль, пока кнопка удерживается">&#128065;</button>
+                </div>
             </div>
             <button type="submit" class="btn btn-full" id="submit-btn">Зарегистрироваться</button>
         </form>

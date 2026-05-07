@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete as sa_delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -37,6 +37,7 @@ class SQLAlchemyPlaylistRepository(PlaylistRepository):
         model = PlaylistModel(
             title=playlist.title,
             prompt=playlist.prompt,
+            is_favorite=playlist.is_favorite,
             user_id=playlist.user_id,
         )
         if tracks:
@@ -64,9 +65,21 @@ class SQLAlchemyPlaylistRepository(PlaylistRepository):
         await self._session.refresh(model, ["tracks"])
         return self._to_entity(model)
 
+    async def update_favorite(self, playlist_id: int, is_favorite: bool) -> Playlist | None:
+        model = await self._session.get(PlaylistModel, playlist_id)
+        if not model:
+            return None
+        model.is_favorite = is_favorite
+        await self._session.commit()
+        await self._session.refresh(model, ["tracks"])
+        return self._to_entity(model)
+
     async def delete(self, playlist_id: int) -> None:
         model = await self._session.get(PlaylistModel, playlist_id)
         if model:
+            await self._session.execute(
+                sa_delete(TrackModel).where(TrackModel.playlist_id == playlist_id)
+            )
             await self._session.delete(model)
             await self._session.commit()
 
@@ -94,6 +107,7 @@ class SQLAlchemyPlaylistRepository(PlaylistRepository):
             id=model.id,
             title=model.title,
             prompt=model.prompt,
+            is_favorite=model.is_favorite,
             user_id=model.user_id,
             created_at=model.created_at,
             tracks=tracks,

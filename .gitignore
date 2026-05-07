@@ -12,6 +12,10 @@ ENV/
 # Environment variables
 .env
 
+# User uploads
+app/presentation/static/uploads/avatars/*
+!app/presentation/static/uploads/avatars/.gitkeep
+
 # IDE
 .idea/
 .vscode/

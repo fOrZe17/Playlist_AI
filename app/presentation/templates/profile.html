@@ -10,8 +10,15 @@
         <div class="profile-avatar" id="profile-avatar">?</div>
         <div class="profile-details">
             <h3 id="profile-email">--</h3>
+            <p id="profile-email-secondary"></p>
             <p id="profile-date">Загрузка...</p>
         </div>
+        <a href="/profile/edit" class="profile-edit-link" aria-label="Редактировать профиль">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h4.2L18.7 9.5l-4.2-4.2L4 15.8V20Z"></path>
+                <path d="M16 3.8 20.2 8"></path>
+            </svg>
+        </a>
     </div>
 
     <div class="profile-stats">
@@ -25,7 +32,31 @@
         </div>
     </div>
 
-    <h3 class="section-title">История плейлистов</h3>
+    <div class="history-toolbar">
+        <h3 class="section-title">История плейлистов</h3>
+        <button type="button" class="favorite-filter-btn" id="favorite-filter" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3.5 14.7 9l6 .9-4.35 4.22 1.03 5.96L12 17.26l-5.38 2.82 1.03-5.96L3.3 9.9l6-.9L12 3.5Z"></path>
+            </svg>
+            <span>Избранные</span>
+            <strong id="favorite-count">0</strong>
+        </button>
+    </div>
+    <div class="history-controls">
+        <label class="search-control" for="playlist-search">
+            <span>Поиск</span>
+            <input type="search" id="playlist-search" placeholder="Название плейлиста">
+        </label>
+        <label class="sort-control" for="playlist-sort">
+            <span>Сортировка</span>
+            <select id="playlist-sort">
+                <option value="date-new">Сначала новые</option>
+                <option value="date-old">Сначала старые</option>
+                <option value="title-asc">По алфавиту ↑</option>
+                <option value="title-desc">По алфавиту ↓</option>
+            </select>
+        </label>
+    </div>
     <div class="playlist-history" id="playlists-history">
         <div class="empty-state">
             <span class="empty-icon">&#127925;</span>
