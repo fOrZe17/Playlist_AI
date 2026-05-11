@@ -8,33 +8,33 @@ templates = Jinja2Templates(directory="app/presentation/templates")
 @router.get("/")
 async def index(request: Request):
     """Главная страница."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @router.get("/login")
 async def login_page(request: Request):
     """Страница входа."""
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 
 @router.get("/register")
 async def register_page(request: Request):
     """Страница регистрации."""
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html")
 
 
 @router.get("/generate")
 async def generate_page(request: Request):
     """Страница генерации плейлиста."""
-    return templates.TemplateResponse("generate.html", {"request": request})
+    return templates.TemplateResponse(request, "generate.html")
 
 
 @router.get("/profile")
 async def profile_page(request: Request):
     """Профиль с историей плейлистов."""
-    return templates.TemplateResponse("profile.html", {"request": request})
+    return templates.TemplateResponse(request, "profile.html")
 
 
 @router.get("/profile/edit")
 async def profile_edit_page(request: Request):
-    return templates.TemplateResponse("profile_edit.html", {"request": request})
+    return templates.TemplateResponse(request, "profile_edit.html")
